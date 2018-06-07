@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">League Of Workout</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="add_account">Ajouter un nouveau compte</string>
+    <string name="add">Ajouter</string>
+    <string name="cancel">Annuler</string>
+    <string name="isempty">Vous devez entrer un nom d\'invocateur</string>
+
+    <string-array name="select_region">
+        <item>EUW [EU West]</item>
+        <item>BR [Brazil]</item>
+        <item>EUNE [EU Nordic &amp; East]</item>
+        <item>KR [Republic of Korea]</item>
+        <item>LAN [Latin America North]</item>
+        <item>LAS [Latin America South]</item>
+        <item>NA [North America]</item>
+        <item>OCE [Oceania]</item>
+        <item>RU [Russia]</item>
+        <item>TR [Turkey]</item>
+        <item>JP [Japan]</item>
+    </string-array>
+</resources>

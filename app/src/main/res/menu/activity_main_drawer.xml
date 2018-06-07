@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:id="@+id/group1"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_add_account"
+            android:icon="@drawable/ic_add"
+            android:title="Ajouter un compte"/>
+        <item
+            android:id="@+id/nav_workout"
+            android:icon="@drawable/ic_weight"
+            android:title="Sport"
+            />
+
+    </group>
+
+    <group android:id="@+id/group2"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_stats"
+            android:icon="@drawable/ic_trend"
+            android:title="Statistiques"
+            />
+        <item
+            android:id="@+id/nav_param"
+            android:icon="@drawable/ic_settings"
+            android:title="Paramètres"
+            />
+        <item
+            android:id="@+id/nav_deconnect"
+            android:icon="@drawable/ic_power"
+            android:title="Se déconnecter"
+            />
+    </group>
+
+</menu>

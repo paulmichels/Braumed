@@ -37,7 +37,7 @@ public class DrawerBase extends AppCompatActivity
         WorkoutFragment.lastMatchCallBack{
 
     private SummonerEntity summonerEntity;
-    private String version = "8.14.1", apiKey="RGAPI-2638a509-603d-4788-8098-3e27426664f2";
+    private String version = "8.14.1", apiKey=""; //TODO : You need to put your Api Key here
     private static final String CHANNEL_ID = "gameNotification";
     private long lastMatch;
 

@@ -1,0 +1,76 @@
+{
+  "data" : [
+    {
+      "id" : 21,
+      "full" : "SummonerBarrier"
+    },
+    {
+      "id" : 1,
+      "full" : "SummonerBoost"
+    },
+    {
+      "id" : 35,
+      "full" : "SummonerDarkStarChampSelect1"
+    },
+    {
+      "id" : 36,
+      "full" : "SummonerDarkStarChampSelect2"
+    },
+    {
+      "id" : 14,
+      "full" : "SummonerDot"
+    },
+    {
+      "id" : 3,
+      "full" : "SummonerExhaust"
+    },
+    {
+      "id" : 4,
+      "full" : "SummonerFlash"
+    },
+    {
+      "id" : 6,
+      "full" : "SummonerHaste"
+    },
+    {
+      "id" : 7,
+      "full" : "SummonerHeal"
+    },
+    {
+      "id" : 13,
+      "full" : "SummonerMana"
+    },
+    {
+      "id" : 30,
+      "full" :"SummonerPoroRecall"
+    },
+    {
+      "id" : 31,
+      "full" : "SummonerPoroThrow"
+    },
+    {
+      "id" : 33,
+      "full" : "SummonerSiegeChampSelect1"
+    },
+    {
+      "id" : 34,
+      "full" : "SummonerSiegeChampSelect2"
+    },
+    {
+      "id" : 11,
+      "full" : "SummonerSmite"
+    },
+    {
+      "id" : 39,
+      "full" : "SummonerSnowURFSnowball_Mark"
+    },
+    {
+      "id" : 32,
+      "full" : "SummonerSnowball"
+    },
+    {
+      "id" : 12,
+      "full" : "SummonerTeleport"
+    }
+  ]
+}

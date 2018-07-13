@@ -3,8 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <group android:id="@+id/group1"
-        android:checkableBehavior="single">
+    <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_add_account"
             android:icon="@drawable/ic_add"
@@ -17,8 +16,7 @@
 
     </group>
 
-    <group android:id="@+id/group2"
-        android:checkableBehavior="single">
+    <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_stats"
             android:icon="@drawable/ic_trend"
@@ -29,6 +27,12 @@
             android:icon="@drawable/ic_settings"
             android:title="Paramètres"
             />
+
+        <item
+            android:id="@+id/nav_api_key"
+            android:icon="@drawable/ic_key"
+            android:title="API key"/>
+
         <item
             android:id="@+id/nav_deconnect"
             android:icon="@drawable/ic_power"

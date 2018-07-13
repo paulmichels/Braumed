@@ -3,7 +3,8 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#14ace4</color>
-    <color name="grey">#b02e2d2d</color>
-    <color name="win_row_bg">#7c7fbe6c</color>
-    <color name="lose_row_bg">#7dcc797d</color>
+
+    <color name="win">#a3cfec</color>
+    <color name="lose">#e2b6b3</color>
+
 </resources>

@@ -1,9 +1,11 @@
 package workout.leagueofworkout;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.android.volley.NetworkError;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -26,20 +28,25 @@ import workout.leagueofworkout.entity.ParticipantEntity;
 import workout.leagueofworkout.entity.ParticipantIdentityEntity;
 import workout.leagueofworkout.entity.TeamEntity;
 
+import static android.content.Context.MODE_PRIVATE;
+
 public class ApiRequest {
     private RequestQueue requestQueue;
     private Context context;
-    private static final String API_KEY="RGAPI-0fe46d2f-9e97-4c26-9b16-23625d4689a5";
     private String region;
 
     public ApiRequest(RequestQueue requestQueue, Context context){
         this.requestQueue = requestQueue;
         this.context = context;
+        this.region = getRegion();
     }
 
-    public void checkPlayerName (final String name, final int position, final checkPlayerCallBack checkPlayerCallBack){
+    //TODO : BLACKLISTER LES PSEUDO INEXISTANTS, RESET TOUS LES JOURS?
+    public void checkPlayerName (final String name, final int position, final String apiKey, final checkPlayerCallBack checkPlayerCallBack){
         region = convertRegion(position);
-        String url = "https://"+region+".api.riotgames.com/lol/summoner/v3/summoners/by-name/"+name+"?api_key="+API_KEY;
+        saveRegion(region);
+        Log.i("REGION", region);
+        String url = "https://"+ region +".api.riotgames.com/lol/summoner/v3/summoners/by-name/"+name+"?api_key="+apiKey;
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
@@ -63,19 +70,55 @@ public class ApiRequest {
             public void onErrorResponse(VolleyError error) {
                 if(error instanceof NetworkError){
                     checkPlayerCallBack.onError("Impossible de se connecter", context);
+                    Log.i("APP", "NetworkError");
                 } else if (error instanceof ServerError){
                     checkPlayerCallBack.dontExist("Ce joueur n'existe pas", context);
+                    Log.i("APP", "ServerError");
                 }
+                checkPlayerCallBack.onUnexpectedResponse(handleNetworkCode(error), context);
                 Log.i("APP", "ERROR = " + error);
-
             }
         });
 
         requestQueue.add(request);
     }
 
-    public void getHistoryMatches(long accountId, final historyCallBack callback){
-        String url = "https://euw1.api.riotgames.com/lol/match/v3/matchlists/by-account/"+accountId+"?api_key="+API_KEY;
+    public void getLastMatch(long accountId, final String apiKey, final lastMatchCallBack callback){
+        String url = "https://"+region+".api.riotgames.com/lol/match/v3/matchlists/by-account/"+accountId+"?api_key="+apiKey;
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                if(response.length() > 0 ){
+                    try {
+                        JSONArray matches = response.getJSONArray("matches");
+                        JSONObject oneMatch = matches.getJSONObject(0);
+                        long matchId = oneMatch.getLong("gameId");
+                        callback.onSuccess(context, matchId);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }else{
+                    callback.noMatch(context, "Aucun match trouvé");
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                if(error instanceof NetworkError){
+                    callback.onError(context, "Impossible de se connecter, veuillez réessayer");
+                }
+                callback.onUnexpectedResponse(handleNetworkCode(error), context);
+
+            }
+        });
+
+        requestQueue.add(request);
+
+    }
+
+    public void getHistoryMatches(long accountId, final String apiKey, final historyCallBack callback){
+        String url = "https://"+region+".api.riotgames.com/lol/match/v3/matchlists/by-account/"+accountId+"?api_key="+apiKey;
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
@@ -103,9 +146,9 @@ public class ApiRequest {
             public void onErrorResponse(VolleyError error) {
 
                 if(error instanceof NetworkError){
-                    callback.onError(context, "Impossible de se connecter");
+                    callback.onError(context, "Impossible de se connecter, veuillez réessayer");
                 }
-
+                callback.onUnexpectedResponse(handleNetworkCode(error), context);
             }
         });
 
@@ -113,12 +156,11 @@ public class ApiRequest {
 
     }
 
-    public void getMatch(long matchId, final matchCallBack callBack){
-        String url = "https://euw1.api.riotgames.com/lol/match/v3/matches/"+matchId+"?api_key="+API_KEY;
+    public void getMatch(long matchId, final String apiKey, final matchCallBack callBack){
+        String url = "https://"+region+".api.riotgames.com/lol/match/v3/matches/"+matchId+"?api_key="+apiKey;
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>(){
             @Override
             public void onResponse(JSONObject response) {
-
                 GameEntity gameEntity;
                 List<TeamEntity> teamList = new ArrayList<>();
                 List<ParticipantEntity> participantList = new ArrayList<>();
@@ -184,7 +226,12 @@ public class ApiRequest {
                             int championId = participant.getInt("championId");
                             int spell1Id = participant.getInt("spell1Id");
                             int spell2Id = participant.getInt("spell2Id");
-                            String highestAchievedSeasonTier = participant.getString("highestAchievedSeasonTier");
+                            String highestAchievedSeasonTier;
+                            if(participant.has("neutralMinionsKilledTeamJungle")){
+                                highestAchievedSeasonTier = participant.getString("highestAchievedSeasonTier");
+                            } else {
+                                highestAchievedSeasonTier = null;
+                            }
 
                             JSONObject stats = participant.getJSONObject("stats");
                             long physicalDamageDealt = stats.getLong("physicalDamageDealt");
@@ -328,7 +375,12 @@ public class ApiRequest {
                             String summonerName = player.getString("summonerName");
                             String matchHistoryUri = player.getString("matchHistoryUri");
                             long currentAccountId = player.getLong("currentAccountId");
-                            long summonerId = player.getLong("summonerId");
+                            long summonerId;
+                            if(player.has("summonerId")){
+                                summonerId = player.getLong("summonerId");
+                            } else {
+                                summonerId = 0;
+                            }
                             long accountId = player.getLong("accountId");
                             int profileIcon = player.getInt("profileIcon");
                             participantIdentityEntity = new ParticipantIdentityEntity( accountId,  summonerId,  currentAccountId,  participantId,  profileIcon,  matchHistoryUri,  summonerName,  currentPlatformId);
@@ -351,6 +403,7 @@ public class ApiRequest {
                 if(error instanceof NetworkError){
                     callBack.onError(context, "Impossible de se connecter");
                 }
+                callBack.onUnexpectedResponse(handleNetworkCode(error), context);
             }
         });
 
@@ -388,21 +441,24 @@ public class ApiRequest {
         for (int i=0; i<data.length(); i++){
             JSONObject champion = data.getJSONObject(i);
             if(champion.getInt("id")==champId){
-                champName = champion.getString("name");
+                champName = champion.getString("key");
             }
         }
         return champName;
     }
 
-    public String getSummonerName(int spellId) throws JSONException{
-
-        String json = getJsonFile(context, "summoner-spell.json");
-        JSONObject summoner = new JSONObject(json);
-        JSONObject data = summoner.getJSONObject("data");
-        JSONObject summonerInfo = data.getJSONObject(String.valueOf(spellId));
-        JSONObject image = summonerInfo.getJSONObject("image");
-        String summonerName = image.getString("full");
-        return summonerName;
+    public String getSummonerSpell(int spellId) throws JSONException{
+        String json = getJsonFile(context, "summonerspells.json");
+        String spellName = null;
+        JSONObject spells = new JSONObject(json);
+        JSONArray data = spells.getJSONArray("data");
+        for (int i=0; i<data.length(); i++){
+            JSONObject spell = data.getJSONObject(i);
+            if(spell.getInt("id")==spellId){
+                spellName = spell.getString("full");
+            }
+        }
+        return spellName;
     }
 
     public String convertRegion(int position){
@@ -445,23 +501,61 @@ public class ApiRequest {
         return region;
     }
 
+    public String handleNetworkCode(VolleyError error){
+        NetworkResponse networkResponse = error.networkResponse;
+        String message = null;
+        if (networkResponse != null && networkResponse.statusCode == 403) {
+            message = "L'API key a expiré, veuillez en entrer une nouvelle";
+        } else if (networkResponse != null && networkResponse.statusCode == 422) {
+            message = "Le joueur existe mais aucun match recent trouvé";
+        } else if (networkResponse != null && networkResponse.statusCode == 429) {
+            message = "Trop de requêtes, veuillez réessayer dans une minute";
+        } else if (networkResponse != null && networkResponse.statusCode == 500) {
+            message = "Problème des serveurs RIOT GAMES veuillez réessayer plus tard";
+        } else if (networkResponse != null && networkResponse.statusCode == 503) {
+            message = "Service non disponible veuillez réessayer plus tard";
+        }
+        return message;
+    }
 
     public interface checkPlayerCallBack{
         void onSuccess(int profileIconId, String name, long summonerLevel, long accountId, long id, long revisionDate, Context context);
         void dontExist(String message, Context context);
         void onError(String message, Context context);
+        void onUnexpectedResponse(String message, Context context);
     }
 
     public interface historyCallBack {
         void onSuccess(Context context, List<Long> matches);
         void noMatch(Context context, String message);
         void onError(Context context, String message);
+        void onUnexpectedResponse(String message, Context context);
     }
 
     public interface matchCallBack{
         void onSuccess(Context context, GameEntity gameEntity);
         void noMatch(Context context, String message);
         void onError(Context context, String message);
+        void onUnexpectedResponse(String message, Context context);
     }
 
+    public interface lastMatchCallBack{
+        void onSuccess(Context context, long matchId);
+        void noMatch(Context context, String message);
+        void onError(Context context, String message);
+        void onUnexpectedResponse(String message, Context context);
+    }
+
+    public String getRegion(){
+        SharedPreferences sharedPreferences = context.getSharedPreferences("region",MODE_PRIVATE);
+        String region = sharedPreferences.getString("region", "");
+        return region;
+    }
+
+    public void saveRegion(String region){
+        SharedPreferences sharedPreferences = context.getSharedPreferences("region", MODE_PRIVATE);
+        SharedPreferences.Editor prefsEditor = sharedPreferences.edit();
+        prefsEditor.putString("region", region);
+        prefsEditor.apply();
+    }
 }
